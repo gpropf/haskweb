@@ -1,6 +1,6 @@
 # Haskweb
 
-### my collection of Haskell demos using GHCJS and the Reflex framework.
+### Haskell demos using GHCJS and the Reflex framework. Mostly exists so that I can learn about FRP and GHCJS.
 
 ## Setup the Environment
 
