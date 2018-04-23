@@ -1,6 +1,6 @@
-# Reflexamples
+# Haskweb
 
-### my collection of Haskell demos using the Reflex framework.
+### my collection of Haskell demos using GHCJS and the Reflex framework.
 
 ## Setup the Environment
 
