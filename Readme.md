@@ -32,6 +32,6 @@ So the steps to build this package are
 
 There's some weirdness right now involving this VM and pushing to
 github. The way to push right now is `git push
-https://gpropf:mygithubpasswd@github.com/gpropf/reflexamples.git`. This
+https://gpropf:mygithubpasswd@github.com/gpropf/haskweb.git`. This
 should push changes without asking for username and password or
 popping up that KWallet dialog.
