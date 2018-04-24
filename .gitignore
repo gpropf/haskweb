@@ -1,0 +1,17 @@
+# Compiled
+*.js_o
+*.js_hi
+
+# GHCJS JavaScript output files
+*.jsexe/*.js
+*.jsexe/*.externs
+*.jsexe/*.stats
+
+# Packaging
+*.tar.gz
+
+# Backup files
+*~
+
+# nix-build and cabal debris
+result
