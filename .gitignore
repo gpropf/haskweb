@@ -15,3 +15,5 @@
 
 # nix-build and cabal debris
 result
+dist-*/
+*-result
