@@ -60,6 +60,10 @@ executable frontend
   build-depends:       base >=4.9 && <4.10
                      , common
                      , reflex-dom
+                     , containers
+                     , text
+                     , mtl
+                       
   
   -- Directories containing source files.
   hs-source-dirs:      src
