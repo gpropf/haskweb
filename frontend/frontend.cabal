@@ -63,6 +63,7 @@ executable frontend
                      , containers
                      , text
                      , mtl
+                     , random
                        
   
   -- Directories containing source files.
