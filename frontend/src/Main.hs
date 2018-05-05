@@ -38,11 +38,11 @@ svgAttrs = fromList [ ( "viewBox" , pack (
 --showCircle ::
 --  (PostBuild t (DynamicWriterT t w m), DomBuilder t (DynamicWriterT t w m)) => (Text, Text) -> m ()
   
-showCircle (x, y) = do
+showCircle ((x, y),(r,color)) = do
   let circleAttrs = fromList [ ( "cx", x)
                              , ( "cy", y)
-                             , ( "r",  pack "10")
-                             , ( "style",  pack $ "fill:Blue") ] 
+                             , ( "r",  r)
+                             , ( "style",  pack $ "fill:" ++ unpack color) ] 
 
   elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
 
@@ -60,14 +60,18 @@ main = mainWidget $ el "div" $ do
   rec
     let xStr = value tix
         yStr = value tiy
-        rStr = value tiy
-        values = zipDynWith (,) xStr yStr
+        rStr = value tir
+        cStr = value tic
+        xy = zipDynWith (,) xStr yStr
+        rc = zipDynWith (,) rStr cStr
+        values = zipDynWith (,) xy rc
         ourCircle = fmap showCircle values
     
     el "p" $ text "Haskweb Frontend (V3), type something in the textbox..."
     tix <- textInput $ def { _textInputConfig_initialValue = "50" }
     tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
     tir <- textInput $ def { _textInputConfig_initialValue = "10" }
+    tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
     el "div" $ dynText $ xStr
 
     {-
