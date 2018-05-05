@@ -1,3 +1,4 @@
+{-# Language RecursiveDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 
@@ -9,6 +10,7 @@ import Data.Text (Text, pack, unpack)
 import Reflex.Dom
 import System.Random
 import Data.Map (Map, fromList)
+import Control.Monad
 
 
 width  = 400
@@ -24,49 +26,87 @@ svgAttrs = fromList [ ( "viewBox" , pack (
                     , ( "width" ,    (pack . show) width)
                     , ( "height" ,   (pack . show) height)
                     , ( "style", "border: 1px solid black")
-                    ] 
+                    ]
+
+
+
+--showCircle :: MonadWidget t m => ((String,Double), (Double,Double)) -> m ()
+--showCircle ::
+--  (Show t1, Show t2, Show t3, PostBuild t m, DomBuilder t m) =>
+--  (t3, t2, t1) -> m ()
+
+--showCircle ::
+--  (PostBuild t (DynamicWriterT t w m), DomBuilder t (DynamicWriterT t w m)) => (Text, Text) -> m ()
+  
+showCircle (x, y) = do
+  let circleAttrs = fromList [ ( "cx", x)
+                             , ( "cy", y)
+                             , ( "r",  pack "10")
+                             , ( "style",  pack $ "fill:Blue") ] 
+
+  elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
+
+  return ()
+
+{-
+stringToCircle =    mapM showCircle                  
+                  . map read
+                  . unpack
+-}
 
 
 main :: IO ()
 main = mainWidget $ el "div" $ do
-  el "p" $ text "Haskweb Frontend (V2), type something in the textbox..."
-  tix <- textInput $ def { _textInputConfig_initialValue = "50" }
-  tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
-  dtx <- dynText $ _textInput_value tix
+  rec
+    let xStr = value tix
+        yStr = value tiy
+        rStr = value tiy
+        values = zipDynWith (,) xStr yStr
+        ourCircle = fmap showCircle values
+    
+    el "p" $ text "Haskweb Frontend (V3), type something in the textbox..."
+    tix <- textInput $ def { _textInputConfig_initialValue = "50" }
+    tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
+    tir <- textInput $ def { _textInputConfig_initialValue = "10" }
+    el "div" $ dynText $ xStr
 
---  dty <-
-  el "div" $ dynText $ _textInput_value tix
-  el "div" $ dynText $ _textInput_value tiy
---  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
-  el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-  b1 <- button "Push Me!"
+    {-
+      Below: A little experiment to see how one goes
+      about modifying values and then putting them
+      back in the dynamic monad.
+    -}
 
-  let kpe = fmap (pack . show) $ _textInput_keypress tix
-  kpd <- holdDyn "None" kpe 
-  dynText kpd
-  let xStr = value tix
-      yStr = value tiy
+    el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
 
---  x <- mapM (read . unpack) xStr
-  --y <- mapM (read . unpack) yStr
-  --ourCircle <- fmap $ (mapM showCircle) [(("Green", 45), (x,y))]
-  elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ blank
+    --el "div" $ dynText $ fmap (pack . (++ "XXX") . unpack) $ values
+    
+    --x <- liftM unpack xStr
+    --y <- fmap unpack yStr
+    elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ dyn ourCircle
+    el "br" $ return ()
+  
+--    return()
   return ()
+    --dtx <- dynText $ _textInput_value tix
+  
+  --  dty <-
+  {-
+    el "div" $ dynText $ _textInput_value tix
+    el "div" $ dynText $ _textInput_value tiy
+    --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
+    el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
+    b1 <- button "Push Me!"
+  
+    let kpe = fmap (pack . show) $ _textInput_keypress tix
+    kpd <- holdDyn "None" kpe 
+    dynText kpd;
+    
+    return ()
+    -}    
+
       
   
 --stringToCircle = mapM showCircle
                  
 graphicArea :: (MonadWidget t m) => m a -> m a
 graphicArea = el "svg" 
-
-
-showCircle :: MonadWidget t m => ((String,Double), (Double,Double)) -> m ()
-showCircle ((color, radius), (x, y)) = do
-    let circleAttrs = fromList [ ( "cx", (pack . show) x)
-                               , ( "cy", (pack . show) y)
-                               , ( "r",  (pack . show) radius)
-                               , ( "style",  pack $ "fill:" ++ color) ] 
-
-    elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
-
-    return ()
