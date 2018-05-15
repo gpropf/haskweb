@@ -64,6 +64,7 @@ executable frontend
                      , text
                      , mtl
                      , random
+                     , time
                        
   
   -- Directories containing source files.

@@ -11,12 +11,19 @@ import Reflex.Dom
 import System.Random
 import Data.Map (Map, fromList)
 import Control.Monad
+import Control.Monad.Trans (liftIO)
+import Data.Time.Clock (NominalDiffTime, getCurrentTime)
 
+type Point = (Double,Double)
+type Vector = (Double,Double)
 
 width  = 400
 height = 300
 
 svgNamespace = Just "http://www.w3.org/2000/svg"
+
+updateFrequency :: NominalDiffTime
+updateFrequency = 0.3
 
 svgAttrs = fromList [ ( "viewBox" , pack (
                                         show (-width / 2) 
@@ -68,11 +75,14 @@ main = mainWidget $ el "div" $ do
         ourCircle = fmap showCircle values
     
     el "p" $ text "Haskweb Frontend (V3), type something in the textbox..."
+    tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
+    deltas <- foldDyn (\_ (x,y) -> (x+1,y+1)) (20,15) tickEvent
     tix <- textInput $ def { _textInputConfig_initialValue = "50" }
     tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
     tir <- textInput $ def { _textInputConfig_initialValue = "10" }
     tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
     el "div" $ dynText $ xStr
+    el "div" $ dynText $ fmap (pack . show) deltas
 
     {-
       Below: A little experiment to see how one goes
