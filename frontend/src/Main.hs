@@ -71,19 +71,22 @@ main = mainWidget $ el "div" $ do
         cStr = value tic
         xy = zipDynWith (,) xStr yStr
         rc = zipDynWith (,) rStr cStr
-        values = zipDynWith (,) xy rc
+        deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
+        values = zipDynWith (,) deltaStr rc
         ourCircle = fmap showCircle values
     
     el "p" $ text "Haskweb Frontend (V3), type something in the textbox..."
     tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
-    deltas <- foldDyn (\_ (x,y) -> (x+1,y+1)) (20,15) tickEvent
+    deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
     tix <- textInput $ def { _textInputConfig_initialValue = "50" }
     tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
     tir <- textInput $ def { _textInputConfig_initialValue = "10" }
     tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
     el "div" $ dynText $ xStr
     el "div" $ dynText $ fmap (pack . show) deltas
-
+    b1 <- button "Push me"
+    --bEv <- widgetHold (fmap (read . unpack) xStr,fmap (read . unpack) yStr)  b1
+    bEv <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) b1
     {-
       Below: A little experiment to see how one goes
       about modifying values and then putting them
@@ -109,7 +112,7 @@ main = mainWidget $ el "div" $ do
     el "div" $ dynText $ _textInput_value tiy
     --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
     el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-    b1 <- button "Push Me!"
+    
   
     let kpe = fmap (pack . show) $ _textInput_keypress tix
     kpd <- holdDyn "None" kpe 
