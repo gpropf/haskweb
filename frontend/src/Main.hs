@@ -75,7 +75,7 @@ main = mainWidget $ el "div" $ do
         values = zipDynWith (,) deltaStr rc
         ourCircle = fmap showCircle values
     
-    el "p" $ text "Haskweb Frontend (V3), type something in the textbox..."
+    el "p" $ text "Haskweb Frontend (V4), type something in the textbox..."
     tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
     deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
     tix <- textInput $ def { _textInputConfig_initialValue = "50" }

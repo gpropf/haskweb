@@ -17,3 +17,17 @@ You can build standalone apps too.
 `$ nix-build -o frontend-result -A ghcjs.frontend`
 
 You'll find the executable at `./frontend-result/bin/frontend`.
+
+## Debug and Develop
+
+The best way to test new changes is
+
+`nix-shell -A shells.ghc`
+
+This gets you into a nix-shell with paths to things like ghci among other things. Now do
+
+`cd frontend/src`
+
+then `ghci` and withing the ghci REPL do `:load Main.hs`
+
+
