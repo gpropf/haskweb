@@ -74,25 +74,32 @@ main = mainWidget $ el "div" $ do
         deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
         values = zipDynWith (,) deltaStr rc
         ourCircle = fmap showCircle values
+        
     
-    el "p" $ text "Haskweb Frontend (V5), type something in the textbox..."
+    el "p" $ text "Haskweb Frontend (V6), type something in the textbox..."
+    
     tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
     deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
     tix <- textInput $ def { _textInputConfig_initialValue = "50" }
+    
     tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
     tir <- textInput $ def { _textInputConfig_initialValue = "10" }
     tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
+    --
     el "div" $ dynText $ xStr
     el "div" $ dynText $ fmap (pack . show) deltas
+    bTag <- holdDyn "" $ tag (current (value tix)) b1
+    --bTagEv <-  tag (current (value tix)) b1
+    el "div" $ dynText bTag
     b1 <- button "Push me"
     --bEv <- widgetHold (fmap (read . unpack) xStr,fmap (read . unpack) yStr)  b1
-    bEv <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) b1
+    
     {-
       Below: A little experiment to see how one goes
       about modifying values and then putting them
       back in the dynamic monad.
     -}
-
+    --bEv <- b1
     el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
 
     --el "div" $ dynText $ fmap (pack . (++ "XXX") . unpack) $ values
