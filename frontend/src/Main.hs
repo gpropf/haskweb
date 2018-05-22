@@ -59,25 +59,48 @@ showCircle ((x, y),(r,color)) = do
 updateFlips flips =
   flips ++ "T"
 
-coinFlipper :: (MonadWidget t m, RandomGen g) => g -> m ()
-coinFlipper g = 
+coinSeq s rs i = let r = rs!!i
+                   in
+                     case r of
+                       0 -> s ++ "T"
+                       1 -> s ++ "H"
+                       _ -> s ++ "X"
+
+
+coinFlipper :: (MonadWidget t m) => [Int] -> m ()
+--coinFlipper :: (Dynamic t m) => [Int] -> m
+coinFlipper rs = 
   do
-    rec
-      el "div" $ text "Sequence of Coin Flips: "
-      bFlip <- button "Flip Coin"
+    elAttr "div" ("style" =: "border: 1px solid black; margin: 5px; padding: 5px;") $ do
+      rec
+        el "div" $ text "Sequence of Coin Flips: "
+        bFlip <- button "Flip Coin"
+        bCount <- count bFlip
+      
+    --  flipDyn2 <- fmap coinSeq 
       
       --let flips = "H"
-      
-      flipDyn <- foldDyn (\_ flips ->
-                             let (r::Int,g') = randomR (0::Int, 2::Int) g
-                             in
-                               case r of
-                                 0 -> flips ++ "T"
-                                 1 -> flips ++ "H"
-                                 _ -> flips ++ "X"
-                         ) "H" bFlip
-      el "div" $ dynText $ fmap pack flipDyn
+--      let
+        --rsDyn = foldDyn (\_ rs -> rs) rs bFlip
+        --iDyn = fmap (\_ i -> i + 1) 0 bFlip
+        
+        let rDyn = zipDynWith (,) flipDyn bCount
+      --let flipsDyn = dyn $ pack "H"
+      --let g' = fmap (\a -> a) gDyn
+        flipDyn <- foldDyn (\_ (flips,bc) ->
+                            
+                              let --i = fmap (\i -> i) gDyn
+                                r = rs!!bc
+                              in
+                                case r of
+                                  0 -> (flips ++ "T", bc + 1)
+                                  1 -> (flips ++ "H", bc + 1)
+                                  _ -> (flips ++ "X", bc + 1)
+                           ) ("H",0) bFlip
+        el "div" $ dynText $ fmap (pack . show) flipDyn
+        el "div" $ dynText $ fmap (pack . show . coinSeq "GOO" rs) bCount
   --    text $ pack flips;
+      return ()
     return ()
       
      
@@ -89,8 +112,7 @@ main =
   do
     g <- getStdGen
     
-    mainWidget $ el "div" $ do
-  
+    mainWidget $ el "div" $ do  
       rec
         let xStr = value tix
             yStr = value tiy
@@ -101,24 +123,21 @@ main =
             deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
             values = zipDynWith (,) deltaStr rc
             ourCircle = fmap showCircle values
+            rs = randomRs (0::Int,1::Int) g
             
-        
-
         el "p" $ text "Haskweb Frontend (V6), type something in the textbox..."
-    
         tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
         deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
-        
-        coinFlipper g
+
+        coinFlipper rs
+
         tix <- textInput $ def { _textInputConfig_initialValue = "50" }
-    
         tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
         tir <- textInput $ def { _textInputConfig_initialValue = "10" }
         tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
-    --
         el "div" $ dynText $ xStr
         el "div" $ dynText $ fmap (pack . show) deltas
-    --
+
     {-
 This bTag stuff grabs the value of the X input field and then turns
 it into a dyn to display when the button is clicked.
@@ -126,45 +145,28 @@ it into a dyn to display when the button is clicked.
         bTag <- holdDyn "" $ tag (current (value tix)) b1
         el "div" $ dynText bTag
 
-
         b1 <- button "Push me"
-    --bEv <- widgetHold (fmap (read . unpack) xStr,fmap (read . unpack) yStr)  b1
+
     
     {-
       Below: A little experiment to see how one goes
       about modifying values and then putting them
       back in the dynamic monad.
     -}
-    --bEv <- b1
+
         el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
-
-    --el "div" $ dynText $ fmap (pack . (++ "XXX") . unpack) $ values
-    
-    --x <- liftM unpack xStr
-    --y <- fmap unpack yStr
         elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ dyn ourCircle
-        el "br" $ return ()
-  
---    return()
-      return ()
-    --dtx <- dynText $ _textInput_value tix
-  
-  --  dty <-
-  {-
-    el "div" $ dynText $ _textInput_value tix
-    el "div" $ dynText $ _textInput_value tiy
-    --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
-    el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-    
-  
-    let kpe = fmap (pack . show) $ _textInput_keypress tix
-    kpd <- holdDyn "None" kpe 
-    dynText kpd;
-    
-    return ()
-    -}    
 
-      
+        el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
+        let kpe = fmap (pack . show) $ _textInput_keypress tix
+        kpd <- holdDyn "None" kpe 
+        dynText kpd;
+        return ()
+        
+        el "br" $ return ()
+      return ()
+    --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
+   
   
 --stringToCircle = mapM showCircle
                  
