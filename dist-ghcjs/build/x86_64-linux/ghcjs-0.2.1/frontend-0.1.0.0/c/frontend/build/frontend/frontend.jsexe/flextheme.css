@@ -10,3 +10,21 @@
     flex-direction: row;
     margin 3px;
 }
+
+
+.column {
+    display: flex;
+    flex-direction: column;
+    margin 3px;
+}
+
+button {
+    margin: 3px;
+    padding: 2px;
+}
+
+div {
+    /* This is just to keep everything from being so crowded together */
+    margin: 3px;
+    padding: 2px;
+}    

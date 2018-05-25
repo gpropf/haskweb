@@ -108,7 +108,7 @@ coinFlipper rs =
 textFieldDemo ::  (MonadWidget t m) => m ()
 textFieldDemo = do
  
-  elAttr "div" ("class" =: "container") $ mdo
+  elAttr "div" ("class" =: "container column") $ mdo
     let xStr = value tix
         yStr = value tiy
         rStr = value tir
@@ -131,14 +131,17 @@ textFieldDemo = do
       el "div" $ dynText $ xStr
       el "div" $ dynText $ fmap (pack . show) deltas
       return deltas
-    {-
+
+
+    elAttr "div" ("class" =: "row") $ mdo
+      {-
 This bTag stuff grabs the value of the X input field and then turns
 it into a dyn to display when the button is clicked.
-    -}
-    bTag <- holdDyn "" $ tag (current (value tix)) b1
-    el "div" $ dynText bTag
-    b1 <- button "Push me"
-    blank
+-}
+      bTag <- holdDyn "" $ tag (current (value tix)) b1
+      el "div" $ dynText bTag
+      b1 <- button "Push me"
+      blank
     
     {-
       Below: A little experiment to see how one goes
@@ -146,14 +149,14 @@ it into a dyn to display when the button is clicked.
       back in the dynamic monad.
     -}
 
-    el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
-    el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-    let kpe = fmap (pack . show) $ _textInput_keypress tix
-    kpd <- holdDyn "None" kpe 
-    dynText kpd;
+      el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
+      el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
+      let kpe = fmap (pack . show) $ _textInput_keypress tix
+      kpd <- holdDyn "None" kpe 
+      dynText kpd;
       
+      return ()
     return ()
-  return ()
 
 -- -}
 
@@ -178,7 +181,7 @@ main =
             rs = randomRs (0::Int,1::Int) g
 
 
-        el "p" $ text "Haskweb Frontend (V6), type something in the textbox..."
+        el "p" $ text "Haskweb Frontend (V8), type something in the textbox..."
 --        tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
 --        deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
 

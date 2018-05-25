@@ -30,4 +30,6 @@ This gets you into a nix-shell with paths to things like ghci among other things
 
 then `ghci` and withing the ghci REPL do `:load Main.hs`
 
+To rebuild the JavaScript from the Haskell source do:
 
+`nix-shell -A shells.ghcjs --run "cabal --project-file=cabal-ghcjs.project --builddir=dist-ghcjs new-build all"`
