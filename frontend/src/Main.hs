@@ -26,14 +26,14 @@ svgNamespace = Just "http://www.w3.org/2000/svg"
 updateFrequency :: NominalDiffTime
 updateFrequency = 0.3
 
-svgAttrs = fromList [ ( "viewBox" , pack (
+svgAttrs = fromList [ ( pack "viewBox" , pack (
                                         show (-width / 2) 
                                      ++ " " ++ show (-height / 2) 
                                      ++ " " ++ show width 
                                      ++ " " ++ show height) )
-                    , ( "width" ,    (pack . show) width)
-                    , ( "height" ,   (pack . show) height)
-                    , ( "style", "border: 1px solid black")
+                    , ( pack "width" ,    (pack . show) width)
+                    , ( pack "height" ,   (pack . show) height)
+                    , ( pack "style", pack "border: 1px solid black")
                     ]
 
 
@@ -71,7 +71,7 @@ coinFlipper :: (MonadWidget t m) => [Int] -> m ()
 --coinFlipper :: (Dynamic t m) => [Int] -> m
 coinFlipper rs = 
   do
-    elAttr "div" ("style" =: "border: 1px solid black; margin: 5px; padding: 5px;") $ do
+    elAttr "div" ( "class" =: "container") $ do
       rec
         el "div" $ text "Sequence of Coin Flips: "
         bFlip <- button "Flip Coin"
@@ -102,51 +102,43 @@ coinFlipper rs =
   --    text $ pack flips;
       return ()
     return ()
-      
-     
 
+      -- {-
 
-
-main :: IO ()
-main =
-  do
-    g <- getStdGen
-    
-    mainWidget $ el "div" $ do  
-      rec
-        let xStr = value tix
-            yStr = value tiy
-            rStr = value tir
-            cStr = value tic
-            xy = zipDynWith (,) xStr yStr
-            rc = zipDynWith (,) rStr cStr
-            deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
-            values = zipDynWith (,) deltaStr rc
-            ourCircle = fmap showCircle values
-            rs = randomRs (0::Int,1::Int) g
-            
-        el "p" $ text "Haskweb Frontend (V6), type something in the textbox..."
-        tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
-        deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
-
-        coinFlipper rs
-
-        tix <- textInput $ def { _textInputConfig_initialValue = "50" }
-        tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
-        tir <- textInput $ def { _textInputConfig_initialValue = "10" }
-        tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
-        el "div" $ dynText $ xStr
-        el "div" $ dynText $ fmap (pack . show) deltas
-
+textFieldDemo ::  (MonadWidget t m) => m ()
+textFieldDemo = do
+ 
+  elAttr "div" ("class" =: "container") $ mdo
+    let xStr = value tix
+        yStr = value tiy
+        rStr = value tir
+        cStr = value tic
+        xy = zipDynWith (,) xStr yStr
+        rc = zipDynWith (,) rStr cStr
+        deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
+        values = zipDynWith (,) deltaStr rc
+        ourCircle = fmap showCircle values
+    (tix,tiy,tir,tic) <- elAttr "div" ("class" =: "row") $ mdo
+      tix <- textInput $ def { _textInputConfig_initialValue = "50" }
+      tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
+      tir <- textInput $ def { _textInputConfig_initialValue = "10" }
+      tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
+      return (tix,tiy,tir,tic)
+    deltas <- elAttr "div" ("class" =: "row") $ mdo
+      elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ dyn ourCircle
+      tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
+      deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
+      el "div" $ dynText $ xStr
+      el "div" $ dynText $ fmap (pack . show) deltas
+      return deltas
     {-
 This bTag stuff grabs the value of the X input field and then turns
 it into a dyn to display when the button is clicked.
     -}
-        bTag <- holdDyn "" $ tag (current (value tix)) b1
-        el "div" $ dynText bTag
-
-        b1 <- button "Push me"
-
+    bTag <- holdDyn "" $ tag (current (value tix)) b1
+    el "div" $ dynText bTag
+    b1 <- button "Push me"
+    blank
     
     {-
       Below: A little experiment to see how one goes
@@ -154,17 +146,84 @@ it into a dyn to display when the button is clicked.
       back in the dynamic monad.
     -}
 
-        el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
-        elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ dyn ourCircle
+    el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
+    el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
+    let kpe = fmap (pack . show) $ _textInput_keypress tix
+    kpd <- holdDyn "None" kpe 
+    dynText kpd;
+      
+    return ()
+  return ()
 
-        el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-        let kpe = fmap (pack . show) $ _textInput_keypress tix
-        kpd <- holdDyn "None" kpe 
-        dynText kpd;
+-- -}
+
+
+
+
+main :: IO ()
+main =
+  do
+    g <- getStdGen
+    mainWidget $ el "div" $ do  
+      rec
+        let -- xStr = value tix
+            -- yStr = value tiy
+            -- rStr = value tir
+            -- cStr = value tic
+            -- xy = zipDynWith (,) xStr yStr
+            -- rc = zipDynWith (,) rStr cStr
+            -- deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
+            -- values = zipDynWith (,) deltaStr rc
+--            ourCircle = fmap showCircle values
+            rs = randomRs (0::Int,1::Int) g
+
+
+        el "p" $ text "Haskweb Frontend (V6), type something in the textbox..."
+--        tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
+--        deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
+
+        coinFlipper rs
+        textFieldDemo
+    
         return ()
-        
-        el "br" $ return ()
       return ()
+    return ()
+
+--         tix <- textInput $ def { _textInputConfig_initialValue = "50" }
+--         tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
+--         tir <- textInput $ def { _textInputConfig_initialValue = "10" }
+--         tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
+--         elAttr "div" ("class" =: "container") $ do
+--           rec
+--             el "div" $ dynText $ xStr
+--             el "div" $ dynText $ fmap (pack . show) deltas
+
+--     {-
+-- This bTag stuff grabs the value of the X input field and then turns
+-- it into a dyn to display when the button is clicked.
+--     -}
+--             bTag <- holdDyn "" $ tag (current (value tix)) b1
+--             el "div" $ dynText bTag
+
+--             b1 <- button "Push me"
+
+    
+--     {-
+--       Below: A little experiment to see how one goes
+--       about modifying values and then putting them
+--       back in the dynamic monad.
+--     -}
+
+--             el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
+
+
+            -- el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
+            -- let kpe = fmap (pack . show) $ _textInput_keypress tix
+            -- kpd <- holdDyn "None" kpe 
+            -- dynText kpd;
+            -- return ()
+        
+            -- el "br" $ return ()
     --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
    
   
