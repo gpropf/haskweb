@@ -68,9 +68,9 @@ coinSeq s rs i = let r = rs!!i
                        1 -> s ++ "H"
                        _ -> s ++ "X"
 
-isHighlighted t1 t2
-  | t1 == t2 = constDyn $ fromList [(pack "style" , pack "background-color:yellowgreen")]
-  | otherwise = constDyn $ fromList [(pack "class" , pack "normal")]
+isHighlighted (t1,t2)
+  | t1 == t2 = fromList [(pack "style" , pack "background-color:yellowgreen")]
+  | otherwise = fromList [(pack "t1" , (pack . show) t1), (pack "t2" , (pack . show) t2)]
 
 coinFlipper :: (MonadWidget t m) => [Int] -> m ()
 --coinFlipper :: (Dynamic t m) => [Int] -> m
@@ -91,7 +91,9 @@ coinFlipper rs =
         
         let rDyn = zipDynWith (,) flipDyn bCount
             tdynAttrs = fromList [("class" , "normal")]
-            fstFlipDyn = fmap (pack . show. fst) flipDyn
+            fstFlipDyn = fmap (last3 . fst) flipDyn
+            coinComparison = zipDynWith (,) fstFlipDyn (constDyn "HTH")
+            
 
         flipDyn <- foldDyn (\_ (flips,bc) ->
                             
@@ -109,8 +111,8 @@ coinFlipper rs =
         el "table" $ do
           el "tr" $ do
           
-            elDynAttr "td" (isHighlighted "HTH" "HTH") $ dynText $ fmap (pack . show . last3. fst) flipDyn
-            --elDynAttr "td" (isHighlighted (pack "HTH") fstFlipDyn ) $ dynText $ fmap (pack . show . last3. fst) flipDyn
+            --elDynAttr "td" (isHighlighted flipDyn flipDyn) $ dynText $ fmap (pack . show . last3. fst) flipDyn
+            elDynAttr "td" (fmap isHighlighted coinComparison) $ dynText $ fmap (pack . show . last3. fst) flipDyn
 
           
               --   blank
