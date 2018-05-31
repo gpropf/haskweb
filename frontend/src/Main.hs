@@ -59,6 +59,8 @@ showCircle ((x, y),(r,color)) = do
 updateFlips flips =
   flips ++ "T"
 
+last3 flips = reverse $ take 3 $ reverse flips
+
 coinSeq s rs i = let r = rs!!i
                    in
                      case r of
@@ -66,6 +68,9 @@ coinSeq s rs i = let r = rs!!i
                        1 -> s ++ "H"
                        _ -> s ++ "X"
 
+isHighlighted t1 t2
+  | t1 == t2 = constDyn $ fromList [(pack "style" , pack "background-color:yellowgreen")]
+  | otherwise = constDyn $ fromList [(pack "class" , pack "normal")]
 
 coinFlipper :: (MonadWidget t m) => [Int] -> m ()
 --coinFlipper :: (Dynamic t m) => [Int] -> m
@@ -85,8 +90,9 @@ coinFlipper rs =
         --iDyn = fmap (\_ i -> i + 1) 0 bFlip
         
         let rDyn = zipDynWith (,) flipDyn bCount
-      --let flipsDyn = dyn $ pack "H"
-      --let g' = fmap (\a -> a) gDyn
+            tdynAttrs = fromList [("class" , "normal")]
+            fstFlipDyn = fmap (pack . show. fst) flipDyn
+
         flipDyn <- foldDyn (\_ (flips,bc) ->
                             
                               let --i = fmap (\i -> i) gDyn
@@ -97,9 +103,19 @@ coinFlipper rs =
                                   1 -> (flips ++ "H", bc + 1)
                                   _ -> (flips ++ "X", bc + 1)
                            ) ("H",0) bFlip
+ --    
         el "div" $ dynText $ fmap (pack . show) flipDyn
         el "div" $ dynText $ fmap (pack . show . coinSeq "GOO" rs) bCount
-  --    text $ pack flips;
+        el "table" $ do
+          el "tr" $ do
+          
+            elDynAttr "td" (isHighlighted "HTH" "HTH") $ dynText $ fmap (pack . show . last3. fst) flipDyn
+            --elDynAttr "td" (isHighlighted (pack "HTH") fstFlipDyn ) $ dynText $ fmap (pack . show . last3. fst) flipDyn
+
+          
+              --   blank
+    --      blank
+          --    text $ pack flips;
       return ()
     return ()
 

@@ -27,4 +27,9 @@ div {
     /* This is just to keep everything from being so crowded together */
     margin: 3px;
     padding: 2px;
-}    
+}
+
+td.highlighted {
+    background-color: "#ee6600";
+}
+
