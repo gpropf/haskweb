@@ -24,7 +24,7 @@ height = 300
 svgNamespace = Just "http://www.w3.org/2000/svg"
 
 updateFrequency :: NominalDiffTime
-updateFrequency = 0.3
+updateFrequency = 0.1
 
 svgAttrs = fromList [ ( pack "viewBox" , pack (
                                         show (-width / 2) 
@@ -36,24 +36,13 @@ svgAttrs = fromList [ ( pack "viewBox" , pack (
                     , ( pack "style", pack "border: 1px solid black")
                     ]
 
-
-
---showCircle :: MonadWidget t m => ((String,Double), (Double,Double)) -> m ()
---showCircle ::
---  (Show t1, Show t2, Show t3, PostBuild t m, DomBuilder t m) =>
---  (t3, t2, t1) -> m ()
-
---showCircle ::
---  (PostBuild t (DynamicWriterT t w m), DomBuilder t (DynamicWriterT t w m)) => (Text, Text) -> m ()
   
 showCircle ((x, y),(r,color)) = do
   let circleAttrs = fromList [ ( "cx", x)
                              , ( "cy", y)
                              , ( "r",  r)
                              , ( "style",  pack $ "fill:" ++ unpack color) ] 
-
   elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
-
   return ()
 
 updateFlips flips =
@@ -115,7 +104,7 @@ textFieldDemo = do
         cStr = value tic
         xy = zipDynWith (,) xStr yStr
         rc = zipDynWith (,) rStr cStr
-        deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
+        deltaStr = fmap (\(x,y,xv,yv) -> (pack (show x), pack (show y))) deltas
         values = zipDynWith (,) deltaStr rc
         ourCircle = fmap showCircle values
     (tix,tiy,tir,tic) <- elAttr "div" ("class" =: "row") $ mdo
@@ -127,7 +116,11 @@ textFieldDemo = do
     deltas <- elAttr "div" ("class" =: "row") $ mdo
       elDynAttrNS' svgNamespace "svg" (constDyn svgAttrs) $ dyn ourCircle
       tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
-      deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
+      deltas <- foldDyn (\d -> \(x,y,xv,yv) ->
+                            if x > width/2 || x < -width/2 then (x-xv,y+yv,-xv,yv)
+                            else if y > height/2 || y < -height/2 then (x+xv,y-yv,xv,-yv)
+                            else (x+xv,y+yv,xv,yv))
+                (20,15,5,5) tickEvent
       el "div" $ dynText $ xStr
       el "div" $ dynText $ fmap (pack . show) deltas
       return deltas
