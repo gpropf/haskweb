@@ -76,52 +76,34 @@ coinFlipper :: (MonadWidget t m) => [Int] -> m ()
 --coinFlipper :: (Dynamic t m) => [Int] -> m
 coinFlipper rs = 
   do
-    elAttr "div" ( "class" =: "container") $ do
+    elAttr "div" ( "class" =: "column") $ do
       rec
         el "div" $ text "Sequence of Coin Flips: "
         bFlip <- button "Flip Coin"
-        bCount <- count bFlip
-      
-    --  flipDyn2 <- fmap coinSeq 
-      
-      --let flips = "H"
---      let
-        --rsDyn = foldDyn (\_ rs -> rs) rs bFlip
-        --iDyn = fmap (\_ i -> i + 1) 0 bFlip
-        
+        bCount <- count bFlip        
         let rDyn = zipDynWith (,) flipDyn bCount
             tdynAttrs = fromList [("class" , "normal")]
             fstFlipDyn = fmap (last3 . fst) flipDyn
-            coinComparison = zipDynWith (,) fstFlipDyn (constDyn "HTH")
-            
-
-        flipDyn <- foldDyn (\_ (flips,bc) ->
-                            
-                              let --i = fmap (\i -> i) gDyn
-                                r = rs!!bc
+            coinTriplets = [i ++ j ++ k | i <- ["H","T"], j <- ["H","T"], k <- ["H","T"]]
+            coinComparisons = map (\t -> zipDynWith (,) fstFlipDyn (constDyn t)) coinTriplets 
+        flipDyn <- foldDyn (\_ (flips,bc) ->                            
+                              let r = rs!!bc
                               in
                                 case r of
                                   0 -> (flips ++ "T", bc + 1)
                                   1 -> (flips ++ "H", bc + 1)
                                   _ -> (flips ++ "X", bc + 1)
                            ) ("H",0) bFlip
- --    
         el "div" $ dynText $ fmap (pack . show) flipDyn
-        el "div" $ dynText $ fmap (pack . show . coinSeq "GOO" rs) bCount
+        el "br" $ return ()
+        el "br" $ return ()
+        -- el "div" $ dynText $ fmap (pack . show . coinSeq "GOO" rs) bCount
         el "table" $ do
-          el "tr" $ do
-          
-            --elDynAttr "td" (isHighlighted flipDyn flipDyn) $ dynText $ fmap (pack . show . last3. fst) flipDyn
-            elDynAttr "td" (fmap isHighlighted coinComparison) $ dynText $ fmap (pack . show . last3. fst) flipDyn
-
-          
-              --   blank
-    --      blank
-          --    text $ pack flips;
+--          el "tr" $ do
+            mapM (\cc -> el "tr" $
+                     elDynAttr "td" (fmap isHighlighted cc) $ dynText $ fmap (pack . show . last3. snd) cc) coinComparisons
       return ()
     return ()
-
-      -- {-
 
 textFieldDemo ::  (MonadWidget t m) => m ()
 textFieldDemo = do
@@ -176,79 +158,20 @@ it into a dyn to display when the button is clicked.
       return ()
     return ()
 
--- -}
-
-
-
-
 main :: IO ()
 main =
   do
     g <- getStdGen
     mainWidget $ el "div" $ do  
       rec
-        let -- xStr = value tix
-            -- yStr = value tiy
-            -- rStr = value tir
-            -- cStr = value tic
-            -- xy = zipDynWith (,) xStr yStr
-            -- rc = zipDynWith (,) rStr cStr
-            -- deltaStr = fmap (\(dx,dy) -> (pack (show dx), pack (show dy))) deltas
-            -- values = zipDynWith (,) deltaStr rc
---            ourCircle = fmap showCircle values
-            rs = randomRs (0::Int,1::Int) g
-
-
-        el "p" $ text "Haskweb Frontend (V8), type something in the textbox..."
---        tickEvent <- tickLossy updateFrequency =<< liftIO getCurrentTime
---        deltas <- foldDyn (\d -> \(x,y) -> (x+1,y+1)) (20,15) tickEvent
-
+        let rs = randomRs (0::Int,1::Int) g
+        el "p" $ text "Haskweb (V9) Some experiments with Reflex-Dom..."
         coinFlipper rs
         textFieldDemo
-    
         return ()
       return ()
     return ()
 
---         tix <- textInput $ def { _textInputConfig_initialValue = "50" }
---         tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
---         tir <- textInput $ def { _textInputConfig_initialValue = "10" }
---         tic <- textInput $ def { _textInputConfig_initialValue = "Red" }
---         elAttr "div" ("class" =: "container") $ do
---           rec
---             el "div" $ dynText $ xStr
---             el "div" $ dynText $ fmap (pack . show) deltas
-
---     {-
--- This bTag stuff grabs the value of the X input field and then turns
--- it into a dyn to display when the button is clicked.
---     -}
---             bTag <- holdDyn "" $ tag (current (value tix)) b1
---             el "div" $ dynText bTag
-
---             b1 <- button "Push me"
-
-    
---     {-
---       Below: A little experiment to see how one goes
---       about modifying values and then putting them
---       back in the dynamic monad.
---     -}
-
---             el "div" $ dynText $ fmap (pack . (++ "FOO") . unpack) $ yStr
-
-
-            -- el "div" $ dynText $ fmap (pack . show) $ _textInput_hasFocus tix
-            -- let kpe = fmap (pack . show) $ _textInput_keypress tix
-            -- kpd <- holdDyn "None" kpe 
-            -- dynText kpd;
-            -- return ()
-        
-            -- el "br" $ return ()
-    --  (cnvs, _) <- elAttr' "canvas" ("width" =: "600" <> "height" =: "400") blank
-   
-  
---stringToCircle = mapM showCircle
                  
 graphicArea :: (MonadWidget t m) => m a -> m a
 graphicArea = el "svg" 
