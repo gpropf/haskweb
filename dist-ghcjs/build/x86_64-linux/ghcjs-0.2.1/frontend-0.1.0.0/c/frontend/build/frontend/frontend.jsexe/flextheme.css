@@ -21,6 +21,7 @@
 button {
     margin: 3px;
     padding: 2px;
+    
 }
 
 div {
@@ -29,7 +30,16 @@ div {
     padding: 2px;
 }
 
-td.highlighted {
-    background-color: "#ee6600";
+td, th {
+    border: 1px solid #999;
+    padding: 2px;
+}
+
+table {
+    background-color: #eeeeee;
+    border: 1px solid #ddd;
+    margin: 5px;
+    border-collapse: collapse;
+    padding: 5px;
 }
 

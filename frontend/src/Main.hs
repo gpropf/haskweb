@@ -35,7 +35,6 @@ svgAttrs = fromList [ ( pack "viewBox" , pack (
                     , ( pack "height" ,   (pack . show) height)
                     , ( pack "style", pack "border: 1px solid black")
                     ]
-
   
 showCircle ((x, y),(r,color)) = do
   let circleAttrs = fromList [ ( "cx", x)
@@ -44,9 +43,6 @@ showCircle ((x, y),(r,color)) = do
                              , ( "style",  pack $ "fill:" ++ unpack color) ] 
   elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
   return ()
-
-updateFlips flips =
-  flips ++ "T"
 
 last3 flips = reverse $ take 3 $ reverse flips
 
@@ -59,11 +55,23 @@ coinSeq s rs i = let r = rs!!i
 
 isHighlighted (t1,t2)
   | t1 == t2 = fromList [(pack "style" , pack "background-color:yellowgreen")]
+  -- This t1,t2 stuff is for debugging, it doesn't do anything.
   | otherwise = fromList [(pack "t1" , (pack . show) t1), (pack "t2" , (pack . show) t2)]
 
 coinFlipper :: (MonadWidget t m) => [Int] -> m ()
---coinFlipper :: (Dynamic t m) => [Int] -> m
-coinFlipper rs = 
+coinFlipper rs =
+  
+  {- This creates a block of controls containing a button to push to cause
+ a "coin" to be flipped. It tracks the last three coin flips and shows
+ which of the 8 possible sequences of three it represents. This was
+ suggested to me by a video on Numberphile about "Penney's Problem"
+ which has to do with the probability of getting various 3 flip
+ sequences and which are likely to come first. I worked out that this
+ is a Markov process in my notebook and drew the state
+ diagram. Perhaps it would be fun to show the diagram here at some
+ point with the states lighting up as you play. For now it's just the
+ table.
+-}
   do
     elAttr "div" ( "class" =: "column") $ do
       rec
@@ -84,19 +92,19 @@ coinFlipper rs =
                                   _ -> (flips ++ "X", bc + 1)
                            ) ("H",0) bFlip
         el "div" $ dynText $ fmap (pack . show) flipDyn
-        el "br" $ return ()
-        el "br" $ return ()
-        -- el "div" $ dynText $ fmap (pack . show . coinSeq "GOO" rs) bCount
+        el "hr" blank
         el "table" $ do
---          el "tr" $ do
-            mapM (\cc -> el "tr" $
-                     elDynAttr "td" (fmap isHighlighted cc) $ dynText $ fmap (pack . show . last3. snd) cc) coinComparisons
+          el "thead" $ do
+            el "tr" $ do
+              el "th" $ text "Last 3 Flips"
+          mapM (\cc -> el "tr" $
+                       elDynAttr "td" (fmap isHighlighted cc) $ dynText $ fmap (pack . show . last3. snd) cc) coinComparisons
+        return ()
       return ()
     return ()
 
 textFieldDemo ::  (MonadWidget t m) => m ()
-textFieldDemo = do
- 
+textFieldDemo = do 
   elAttr "div" ("class" =: "container column") $ mdo
     let xStr = value tix
         yStr = value tiy
@@ -107,6 +115,10 @@ textFieldDemo = do
         deltaStr = fmap (\(x,y,xv,yv) -> (pack (show x), pack (show y))) deltas
         values = zipDynWith (,) deltaStr rc
         ourCircle = fmap showCircle values
+        -- We return the textInput values because they are not visible
+        -- in the above let block otherwise, mdo does not seem to be
+        -- mutually recursive (outer blocks can't see what's below in inner
+        -- blocks).
     (tix,tiy,tir,tic) <- elAttr "div" ("class" =: "row") $ mdo
       tix <- textInput $ def { _textInputConfig_initialValue = "50" }
       tiy <- textInput $ def { _textInputConfig_initialValue = "40" }
@@ -164,7 +176,3 @@ main =
         return ()
       return ()
     return ()
-
-                 
-graphicArea :: (MonadWidget t m) => m a -> m a
-graphicArea = el "svg" 
