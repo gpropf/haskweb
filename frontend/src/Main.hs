@@ -77,10 +77,12 @@ coinFlipper rs =
       rec
         el "div" $ text "Sequence of Coin Flips: "
         bFlip <- button "Flip Coin"
-        bCount <- count bFlip        
+        bCount <- count bFlip
+        --te <- traceEvent "something happened" bFlip
         let rDyn = zipDynWith (,) flipDyn bCount
             tdynAttrs = fromList [("class" , "normal")]
             fstFlipDyn = fmap (last3 . fst) flipDyn
+            -- te = traceDyn "something happened" flipDyn
             coinTriplets = [i ++ j ++ k | i <- ["H","T"], j <- ["H","T"], k <- ["H","T"]]
             coinComparisons = map (\t -> zipDynWith (,) fstFlipDyn (constDyn t)) coinTriplets 
         flipDyn <- foldDyn (\_ (flips,bc) ->                            
@@ -92,6 +94,7 @@ coinFlipper rs =
                                   _ -> (flips ++ "X", bc + 1)
                            ) ("H",0) bFlip
         el "div" $ dynText $ fmap (pack . show) flipDyn
+        -- el "div" $ dynText $ fmap (pack . show) te
         el "hr" blank
         el "table" $ do
           el "thead" $ do
