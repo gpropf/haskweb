@@ -38,3 +38,25 @@ To rebuild the JavaScript from the Haskell source do:
 
 `git push https://gpropf:password@github.com/gpropf/haskweb.git` -- password is not actual password of course ;)
 
+# Tutorial Abstract
+_This is a brief abstract for what might be a tutorial on how to use
+this Reflex-Dom Widgets_
+
+## Tips
+* Make lots of smaller functions to create components rather than
+  trying to have large blocks of `el` tags run together. This seems to
+  lead to a lot of type errors if you fail to end with something of
+  type `m ()` for instance.
+  
+* All your component functions should have the type description
+  `MonadWidget t m => m ()` or you will get that confusing error
+  message such as the below:
+
+```
+Ambiguous type variables ‘t0’, ‘m0’ arising from a use of ‘tabDisplay’
+      prevents the constraint ‘(DomBuilder t0 m0)’ from being solved.
+      Relevant bindings include
+        tabA :: m0 () (bound at Main.hs:39:7)
+        tabDemo :: m0 () (bound at Main.hs:38:1)
+```
+

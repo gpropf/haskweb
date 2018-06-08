@@ -1,8 +1,9 @@
 .container {
     display: flex; /* or inline-flex */
-    border: 1px solid #ddd;
+    border: 1px solid #aaa;
     margin: 5px;
     padding: 5px;
+    background-color: #f7f7ff
 }
 
 .row {

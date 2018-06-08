@@ -21,11 +21,33 @@ type Vector = (Double,Double)
 width  = 400
 height = 300
 
+svgNamespace :: Maybe Text
 svgNamespace = Just "http://www.w3.org/2000/svg"
 
 updateFrequency :: NominalDiffTime
 updateFrequency = 0.1
 
+mkTab t n = do
+  -- ("class" =: "container row") $ do
+  el "div" $ text $ pack (t ++ ":" ++ n)
+  
+
+
+
+tabDemo :: MonadWidget t m => m ()
+tabDemo = do
+  let tabA = mkTab "A" "1"
+      tabB = mkTab "B" "2"
+      tabC = mkTab "C" "3"
+  elAttr "div" ("class" =: "container column") $ do
+    el "p" $ text "Play with the tabDisplay widget here."
+    tabDisplay (pack "ulClass")  (pack "liClass") $
+      fromList [ (  "A", return tabA ),
+                 (  "B", return tabB ),
+                 (  "C", return tabC ) ]
+    
+
+svgAttrs :: Map Text Text
 svgAttrs = fromList [ ( pack "viewBox" , pack (
                                         show (-width / 2) 
                                      ++ " " ++ show (-height / 2) 
@@ -35,7 +57,10 @@ svgAttrs = fromList [ ( pack "viewBox" , pack (
                     , ( pack "height" ,   (pack . show) height)
                     , ( pack "style", pack "border: 1px solid black")
                     ]
-  
+
+showCircle ::
+  (PostBuild t m, DomBuilder t m) =>
+  ((Text, Text), (Text, Text)) -> m ()
 showCircle ((x, y),(r,color)) = do
   let circleAttrs = fromList [ ( "cx", x)
                              , ( "cy", y)
@@ -44,21 +69,30 @@ showCircle ((x, y),(r,color)) = do
   elDynAttrNS' svgNamespace "circle" (constDyn circleAttrs) $ return ()
   return ()
 
+
+
+
+
+
+
+last3 :: [a] -> [a]
 last3 flips = reverse $ take 3 $ reverse flips
 
+coinSeq :: (Eq a, Num a) => [Char] -> [a] -> Int -> [Char]
 coinSeq s rs i = let r = rs!!i
                    in
                      case r of
                        0 -> s ++ "T"
                        1 -> s ++ "H"
                        _ -> s ++ "X"
-
+isHighlighted :: (Show a, Eq a) => (a, a) -> Map Text Text
 isHighlighted (t1,t2)
   | t1 == t2 = fromList [(pack "style" , pack "background-color:yellowgreen")]
   -- This t1,t2 stuff is for debugging, it doesn't do anything.
   | otherwise = fromList [(pack "t1" , (pack . show) t1), (pack "t2" , (pack . show) t2)]
 
-coinFlipper :: (MonadWidget t m) => [Int] -> m ()
+coinFlipper :: MonadWidget t m => [Int] -> m ()
+--coinFlipper :: (MonadWidget t m) => [Int] -> m ()
 coinFlipper rs =
   
   {- This creates a block of controls containing a button to push to cause
@@ -73,7 +107,7 @@ coinFlipper rs =
  table.
 -}
   do
-    elAttr "div" ( "class" =: "column") $ do
+    elAttr "div" ( "class" =: "container column") $ do
       rec
         el "div" $ text "Sequence of Coin Flips: "
         bFlip <- button "Flip Coin"
@@ -106,7 +140,8 @@ coinFlipper rs =
       return ()
     return ()
 
-textFieldDemo ::  (MonadWidget t m) => m ()
+textFieldDemo :: MonadWidget t m => m ()
+--textFieldDemo ::  (MonadWidget t m) => m ()
 textFieldDemo = do 
   elAttr "div" ("class" =: "container column") $ mdo
     let xStr = value tix
@@ -174,6 +209,7 @@ main =
       rec
         let rs = randomRs (0::Int,1::Int) g
         el "p" $ text "Haskweb (V9) Some experiments with Reflex-Dom..."
+        tabDemo
         coinFlipper rs
         textFieldDemo
         return ()
