@@ -41,10 +41,10 @@ tabDemo = do
       tabC = mkTab "C" "3"
   elAttr "div" ("class" =: "container column") $ do
     el "p" $ text "Play with the tabDisplay widget here."
-    tabDisplay (pack "ulClass")  (pack "liClass") $
-      fromList [ (  "A", return tabA ),
-                 (  "B", return tabB ),
-                 (  "C", return tabC ) ]
+    tabDisplay (pack "ulClass")  (pack "lClass") $
+      fromList [ (  "A", (pack "A", tabA) ),
+                 (  "B", (pack "B", tabB) ),
+                 (  "C", (pack "C", tabC) )]
     
 
 svgAttrs :: Map Text Text
